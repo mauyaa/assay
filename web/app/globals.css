@@ -34,8 +34,6 @@
   --color-destructive: #d93829; /* Dieter Rams Red */
   --color-destructive-wash: rgba(217, 56, 41, 0.06);
 
-  --shadow-sm: 0 1px 2px rgba(17, 17, 16, 0.06);
-  --shadow-xl: 0 16px 40px rgba(17, 17, 16, 0.14);
   --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
@@ -65,8 +63,6 @@
     --color-destructive: #f0614f; /* Rams Red, lifted */
     --color-destructive-wash: rgba(240, 97, 79, 0.09);
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.55);
   }
 }
 
@@ -91,7 +87,15 @@
   --color-bad-wash: var(--color-destructive-wash);
 
   --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: var(--font-roboto-mono), Menlo, Consolas, monospace;
+  --font-mono: var(--font-jetbrains), Menlo, Consolas, monospace;
+}
+
+/* Show code exactly as written: no ligatures. */
+.font-mono,
+code,
+pre {
+  font-variant-ligatures: none;
+  font-feature-settings: "calt" 0, "liga" 0;
 }
 
 html,
@@ -115,7 +119,6 @@ body {
 :focus-visible {
   outline: none;
   box-shadow: 0 0 0 1.5px var(--color-accent);
-  border-radius: 6px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -201,12 +204,10 @@ body {
   font-family: var(--font-mono);
   font-size: 0.875em;
   background: var(--color-bg-muted);
-  border-radius: 4px;
   padding: 1px 5px;
 }
 .doc pre {
   background: var(--color-bg-muted);
-  border-radius: 6px;
   padding: 16px 20px;
   overflow-x: auto;
   font-size: 13px;

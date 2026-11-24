@@ -15,7 +15,7 @@ export interface PublishInput {
 }
 
 const input =
-  "w-full rounded-md border border-line bg-raised px-3 py-2 text-[14px] text-ink placeholder:text-ink-3 transition-colors focus:border-ink-3 focus:outline-none";
+  "w-full border border-line bg-raised px-3 py-2 text-[14px] text-ink placeholder:text-ink-3 transition-colors focus:border-ink-3 focus:outline-none";
 
 export function PublishModal(props: {
   mode: RegistryMode;
@@ -74,7 +74,7 @@ export function PublishModal(props: {
 
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-4 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-4"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
     >
       <form
@@ -82,7 +82,7 @@ export function PublishModal(props: {
         role="dialog"
         aria-modal="true"
         aria-labelledby="publish-title"
-        className="rise flex max-h-[90dvh] w-full max-w-[600px] flex-col rounded-xl border border-line bg-raised shadow-[var(--shadow-xl)]"
+        className="rise flex max-h-[90dvh] w-full max-w-[600px] flex-col border border-line bg-raised"
       >
         <div className="flex items-start justify-between px-6 pt-6">
           <div>
@@ -90,7 +90,7 @@ export function PublishModal(props: {
               Publish
             </h2>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close" className="-mr-2 rounded-md p-2 text-ink-3 hover:bg-muted hover:text-ink">
+          <button type="button" onClick={onClose} aria-label="Close" className="-mr-2 p-2 text-ink-3 hover:bg-muted hover:text-ink">
             <Cross />
           </button>
         </div>
@@ -112,7 +112,7 @@ export function PublishModal(props: {
                   <option key={p} value={p} />
                 ))}
               </datalist>
-              <button type="button" onClick={pull} className="shrink-0 rounded-md border border-line px-3 text-[14px] text-ink hover:border-ink-3">
+              <button type="button" onClick={pull} className="shrink-0 border border-line px-3 text-[14px] text-ink hover:border-ink-3">
                 Load
               </button>
             </div>
@@ -160,7 +160,7 @@ export function PublishModal(props: {
           <button
             type="submit"
             disabled={busy}
-            className="h-10 shrink-0 rounded-md bg-action px-5 text-[14px] font-medium text-on-action transition-colors hover:bg-action-hover disabled:opacity-50"
+            className="h-10 shrink-0 bg-action px-5 text-[14px] font-medium text-on-action transition-colors hover:bg-action-hover disabled:opacity-50"
           >
             {busy ? "Publishing…" : "Publish"}
           </button>

@@ -19,21 +19,21 @@ export function StatusBar(props: {
   const online = !!status && !chainError;
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-line px-6">
-      <p className="flex items-center gap-2.5">
-        <Logo />
-        <span className="text-[16px] font-semibold tracking-[-0.01em] text-ink">Assay</span>
+    <header className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-line px-6">
+      <p className="flex items-center gap-2.5 text-[13px] font-bold tracking-[0.08em] text-ink uppercase">
+        <Logo size={18} />
+        Assay <span className="font-normal text-ink-3">//</span> Registry
       </p>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-5">
         <p
-          className={`flex items-center gap-2 text-[13px] text-ink-3 transition-opacity ${online ? "" : "opacity-60"}`}
-          title={chainError ? `Can't reach ${NET.rpc}` : `Connected to ${NET.rpc}`}
+          className="flex items-center gap-2 text-[12px] font-medium tracking-[0.08em] text-ink uppercase"
+          title={chainError ? `Can't reach ${NET.rpc}` : status ? `Block ${status.height.toLocaleString("en-US")}` : NET.rpc}
         >
-          <span className="hidden text-ink-2 sm:inline">{NETWORK_NAME}</span>
-          {status && <span className="font-mono tabular-nums">{status.height.toLocaleString("en-US")}</span>}
-          {chainError && <span className="text-bad">offline</span>}
+          <span className={`size-1.5 rounded-full ${online ? "bg-ok" : chainError ? "bg-bad" : "bg-line"}`} />
+          {chainError ? "Offline" : NETWORK_NAME}
         </p>
+        <span className="hidden font-mono text-[12px] text-ink-2 lg:inline">{NET.registryPath}</span>
 
         {props.walletError && !props.wallet && (
           <span role="status" className="hidden max-w-[240px] truncate text-[13px] text-bad md:inline" title={props.walletError}>
@@ -49,7 +49,7 @@ export function StatusBar(props: {
 // One shape for every state: 32px tall, paper white, hairline, medium weight.
 // Neutral on purpose: Cobalt is kept for actions that spend or publish on chain.
 const shape =
-  "flex h-8 items-center gap-1.5 rounded-md border border-line bg-raised px-3 text-[14px] font-medium text-ink shadow-[var(--shadow-sm)] transition-colors hover:border-ink-3 disabled:opacity-60";
+  "flex h-8 items-center gap-1.5 border border-ink bg-raised px-3 text-[12px] font-medium tracking-[0.08em] text-ink uppercase transition-colors hover:bg-ink hover:text-bg disabled:opacity-60";
 
 function Wallet(props: { wallet: WalletAccount | null; error: string | null; onConnect: () => Promise<void> }) {
   const [installed, setInstalled] = useState<boolean | null>(null);
@@ -80,7 +80,7 @@ function Wallet(props: { wallet: WalletAccount | null; error: string | null; onC
             setTimeout(() => setCopied(false), 1200);
           });
         }}
-        className={`${shape} font-mono text-[13px] font-normal`}
+        className={`${shape} font-mono text-[12px] font-normal tracking-normal normal-case`}
       >
         {copied ? <span className="font-sans text-[14px]">Copied</span> : shortAddr(address)}
       </button>

@@ -188,18 +188,21 @@ export function Workbench() {
     const row = selectedRow;
     const fee = row?.listing === "registry" ? row.feePerCall : 0;
     const steps: AgentStep[] = [
-      { title: "Read", status: "idle" },
-      { title: "Audit", status: "idle" },
-      { title: "Pay", status: "idle" },
-      { title: "Receipt", status: "idle" },
+      { title: "Fetching on-chain code", status: "idle" },
+      { title: "Analyzing source & permissions", status: "idle" },
+      { title: "Settling GNOT escrow", status: "idle" },
+      { title: "Receipt hash", status: "idle" },
     ];
+    const started = performance.now();
     setRun({ pkgPath, execute, steps });
     setRunning(true);
     setView("source");
     setFocus(null);
 
-    const step = (i: number, patch: Partial<AgentStep>) =>
-      setRun((r) => (r ? { ...r, steps: r.steps.map((s, j) => (j === i ? { ...s, ...patch } : s)) } : r));
+    const step = (i: number, patch: Partial<AgentStep>) => {
+      const t = patch.status === "done" || patch.status === "failed" ? (performance.now() - started) / 1000 : undefined;
+      setRun((r) => (r ? { ...r, steps: r.steps.map((s, j) => (j === i ? { ...s, ...patch, ...(t !== undefined && { t }) } : s)) } : r));
+    };
     const stop = (from: number, why: string) => {
       for (let i = from; i < 4; i++) step(i, { status: "skipped", result: i === from ? why : undefined });
     };
@@ -275,7 +278,7 @@ export function Workbench() {
       }
       step(2, { status: "done", result: `${fee.toLocaleString("en-US")} ugnot` });
 
-      step(3, { status: "done" });
+      step(3, { status: "done", result: receipt.txHash });
       setRun((r) => (r ? { ...r, receipt, receiptHref } : r));
       setRenderNonce((n) => n + 1);
     } catch (e) {
@@ -342,7 +345,7 @@ export function Workbench() {
   return (
     <div className="fixed inset-0 flex min-h-0 flex-col bg-bg text-ink">
       <StatusBar status={status} chainError={chainError} mode={mode} wallet={wallet} walletError={walletError} onConnect={connect} />
-      <main className="grid min-h-0 flex-1 grid-cols-1 overflow-y-auto lg:grid-cols-[272px_minmax(0,1fr)_352px] lg:overflow-hidden">
+      <main className="grid min-h-0 flex-1 grid-cols-1 overflow-y-auto lg:grid-cols-[minmax(0,28fr)_minmax(0,44fr)_minmax(0,28fr)] lg:overflow-hidden">
         <RegistryPane
           rows={rows}
           mode={mode}

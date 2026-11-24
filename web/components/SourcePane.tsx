@@ -39,7 +39,7 @@ export function SourcePane(props: {
   return (
     <section className="flex min-h-[70vh] min-w-0 flex-col border-b border-line lg:min-h-0 lg:border-r lg:border-b-0">
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-[880px] px-6 pt-6 pb-16 sm:px-10">
+        <div className="mx-auto max-w-[880px] px-6 pt-6 pb-16 sm:px-8">
           {/* Title */}
           <p className="font-mono text-[13px] text-ink-3">gno.land/{ns}</p>
           <h1 className="mt-2 text-[30px] leading-tight font-semibold tracking-[-0.02em] text-ink">{name}</h1>
@@ -48,18 +48,18 @@ export function SourcePane(props: {
           <Meta row={row} audit={current} />
 
           {/* Tabs */}
-          <div className="mt-8 flex items-center gap-6 border-b border-line" role="tablist">
+          <div className="mt-8 flex items-center gap-8 border-b border-line" role="tablist">
             {(["source", "render"] as const).map((v) => (
               <button
                 key={v}
                 role="tab"
                 aria-selected={view === v}
                 onClick={() => props.onView(v)}
-                className={`-mb-px border-b-2 pb-2.5 text-[14px] transition-colors ${
-                  view === v ? "border-ink font-medium text-ink" : "border-transparent text-ink-3 hover:text-ink-2"
+                className={`-mb-px border-b-2 pb-2.5 text-[12px] font-medium tracking-[0.08em] uppercase transition-colors ${
+                  view === v ? "border-ink text-ink" : "border-transparent text-ink-3 hover:text-ink-2"
                 }`}
               >
-                {v === "source" ? "Source" : "Render()"}
+                {v === "source" ? "Raw .gno source" : "gnoweb Render()"}
               </button>
             ))}
           </div>
@@ -158,22 +158,22 @@ function CodePanel(props: {
     props.origin === "onyx" ? "On chain" : props.origin === "registry" ? "On chain · registry copy" : props.origin === "bundled" ? "Local copy" : "Simulated";
 
   return (
-    <div ref={ref} className="overflow-hidden rounded-lg border border-line bg-raised">
-      <div className="flex items-center justify-between gap-4 border-b border-line px-3 py-1.5">
-        <div className="flex gap-1 overflow-x-auto">
+    <div ref={ref} className="overflow-hidden border border-line bg-raised">
+      <div className="flex items-stretch justify-between gap-4 border-b border-line pr-4">
+        <div className="flex overflow-x-auto">
           {props.files.map((f) => (
             <button
               key={f}
               onClick={() => props.onFile(f)}
-              className={`shrink-0 rounded px-2 py-1 font-mono text-[12px] transition-colors ${
-                f === props.active ? "bg-muted text-ink" : "text-ink-3 hover:text-ink-2"
+              className={`shrink-0 border-r border-line px-4 py-2 font-mono text-[12px] transition-colors ${
+                f === props.active ? "bg-bg text-ink" : "text-ink-3 hover:text-ink-2"
               }`}
             >
               {f}
             </button>
           ))}
         </div>
-        <span className="shrink-0 text-[12px] text-ink-3">{originText}</span>
+        <span className="self-center shrink-0 text-[11px] font-medium tracking-[0.08em] text-ink-3 uppercase">{originText}</span>
       </div>
 
       <div className="overflow-x-auto py-3 font-mono text-[13px] leading-[1.75]">
@@ -196,7 +196,7 @@ function CodePanel(props: {
                     >
                       {n}
                     </td>
-                    <td className="pr-6 whitespace-pre">
+                    <td className="pr-6 break-words whitespace-pre-wrap">
                       {toks.length === 0
                         ? " "
                         : toks.map((t, j) => (
@@ -210,7 +210,7 @@ function CodePanel(props: {
                     <tr className={bad ? "bg-bad-wash" : "bg-accent-wash"}>
                       <td className={`border-l-2 ${bad ? "border-bad" : "border-transparent"}`} />
                       <td className="pr-6 pb-2">
-                        <div className={`rise inline-block rounded border bg-raised px-3 py-1.5 font-sans text-[13px] leading-snug whitespace-normal ${bad ? "border-bad/20" : "border-line"}`}>
+                        <div className={`rise inline-block border bg-raised px-3 py-1.5 font-sans text-[13px] leading-snug whitespace-normal ${bad ? "border-bad/20" : "border-line"}`}>
                           <span className={`font-medium ${bad ? "text-bad" : "text-ink"}`} title={callout.message}>
                             {callout.title}
                           </span>
@@ -264,13 +264,13 @@ function RenderView(props: {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex rounded-md bg-muted p-0.5">
+        <div className="flex border border-line">
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => props.onRenderTab(t.id)}
-              className={`rounded px-3 py-1 text-[13px] transition-colors ${
-                t.id === renderTab ? "bg-raised text-ink shadow-[var(--shadow-sm)]" : "text-ink-3 hover:text-ink-2"
+              className={`border-l border-line px-3 py-1.5 text-[12px] first:border-l-0 transition-colors ${
+                t.id === renderTab ? "bg-raised text-ink" : "text-ink-3 hover:text-ink-2"
               }`}
             >
               {t.label}

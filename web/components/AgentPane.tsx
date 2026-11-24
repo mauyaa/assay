@@ -11,10 +11,10 @@ export type StepStatus = "idle" | "running" | "done" | "failed" | "skipped";
 export interface AgentStep {
   title: string;
   status: StepStatus;
-  /** One plain sentence about what happened. */
   result?: string;
-  /** The exact chain call, shown small for proof. */
   cmd?: string;
+  /** Seconds since the run started, set when the step finishes. */
+  t?: number;
 }
 
 export interface AgentRun {
@@ -25,6 +25,8 @@ export interface AgentRun {
   receipt?: ExecutionReceipt;
   receiptHref?: string;
 }
+
+const PLAN = ["Fetching on-chain code", "Analyzing source & permissions", "Settling GNOT escrow", "Receipt hash"];
 
 export function AgentPane(props: {
   pkgPath: string;
@@ -39,15 +41,9 @@ export function AgentPane(props: {
   const { row, run, running } = props;
   const payable = row?.listing === "registry";
   const visible = run && run.pkgPath === props.pkgPath ? run : null;
-  const fee = payable ? row!.feePerCall.toLocaleString("en-US") : "";
-  // Before a run, the step titles alone show the plan.
-  const preview: AgentStep[] = [
-    { title: "Read", status: "idle" },
-    { title: "Audit", status: "idle" },
-    { title: "Pay", status: "idle" },
-    { title: "Receipt", status: "idle" },
-  ];
-  const steps = visible ? (visible.execute ? visible.steps : visible.steps.slice(0, 2)) : payable ? preview : preview.slice(0, 2);
+  const plan: AgentStep[] = PLAN.map((title) => ({ title, status: "idle" }));
+  const all = visible ? visible.steps : plan;
+  const steps = (visible ? visible.execute : payable) ? all : all.slice(0, 2);
 
   const signer =
     props.mode === "live"
@@ -60,81 +56,70 @@ export function AgentPane(props: {
 
   return (
     <aside className="flex min-h-0 flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 pt-6 pb-6">
-        <h2 className="flex items-baseline justify-between text-[16px] font-semibold tracking-[-0.01em] text-ink">
-          Agent
-          <span className="text-[13px] font-normal tracking-normal text-ink-3" title={NET.registryPath}>
-            {signer}
-          </span>
-        </h2>
+      <div className="flex h-11 shrink-0 items-center justify-between border-b border-line px-6 text-[11px] font-medium tracking-[0.08em] uppercase">
+        <span className="text-ink">Agent</span>
+        <span className="text-ink-3 normal-case tracking-normal font-mono text-[12px]" title={NET.registryPath}>
+          {signer}
+        </span>
+      </div>
 
-        <div className="mt-6 flex flex-col gap-1">
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="border-b border-line p-6">
           <button
             onClick={() => props.onRun(payable)}
             disabled={running}
-            className="h-10 rounded-md bg-action text-[14px] font-medium text-on-action transition-colors hover:bg-action-hover disabled:opacity-50"
+            className="h-11 w-full bg-action text-[12px] font-semibold tracking-[0.08em] text-on-action uppercase transition-colors hover:bg-action-hover disabled:opacity-50"
           >
-            {running ? "Running…" : payable ? `Audit & pay ${fee} ugnot` : "Audit"}
+            {running ? "Running…" : payable ? "Run agent audit & execute" : "Run agent audit"}
           </button>
           {payable && (
-            <button
-              onClick={() => props.onRun(false)}
-              disabled={running}
-              className="h-8 rounded-md text-[14px] text-ink-2 transition-colors hover:bg-muted hover:text-ink disabled:opacity-50"
-            >
-              Audit only
-            </button>
+            <p className="mt-3 text-center font-mono text-[12px] text-ink-2">
+              {row!.feePerCall.toLocaleString("en-US")} ugnot · paid only if the audit passes
+            </p>
           )}
         </div>
 
-        {steps.length > 0 && (
-          <ol className="mt-8 border-t border-line pt-6" aria-live="polite" aria-label="Agent steps">
-            {steps.map((s, i) => (
-              <Step key={i} n={i + 1} step={s} last={i === steps.length - 1}>
-                {i === 1 && visible?.report && s.status !== "running" && (
-                  <Findings report={visible.report} onFocus={props.onFocus} />
-                )}
-                {i === 3 && visible?.receipt && <Receipt receipt={visible.receipt} href={visible.receiptHref} />}
-              </Step>
-            ))}
-          </ol>
-        )}
+        <ol aria-live="polite" aria-label="Agent steps">
+          {steps.map((s, i) => (
+            <Step key={i} n={i + 1} step={s}>
+              {i === 1 && visible?.report && s.status !== "running" && <Findings report={visible.report} onFocus={props.onFocus} />}
+              {i === 3 && visible?.receipt && <Receipt receipt={visible.receipt} href={visible.receiptHref} />}
+            </Step>
+          ))}
+        </ol>
       </div>
-
     </aside>
   );
 }
 
-function Step(props: { n: number; step: AgentStep; last: boolean; children?: React.ReactNode }) {
-  const { status, title, result, cmd } = props.step;
-  const marker =
+function Step(props: { n: number; step: AgentStep; children?: React.ReactNode }) {
+  const { status, title, result, cmd, t } = props.step;
+  const mark =
     status === "running" ? (
       <Spinner className="text-ink-2" />
     ) : status === "done" ? (
       <Check className="text-ok" />
     ) : status === "failed" ? (
       <Cross className="text-bad" />
-    ) : (
-      <span className="text-[12px] text-ink-3 tabular-nums">{props.n}</span>
-    );
+    ) : null;
+  const quiet = status === "idle" || status === "skipped";
 
   return (
-    <li className="relative flex gap-3 pb-6">
-      {!props.last && <span className="absolute top-7 bottom-1 left-[11px] w-px bg-line" aria-hidden />}
-      <span
-        className={`relative z-10 grid size-6 shrink-0 place-items-center rounded-full border bg-bg ${
-          status === "failed" ? "border-bad/40" : status === "done" ? "border-ok/40" : "border-line"
-        }`}
-      >
-        {marker}
+    <li className="grid grid-cols-[2rem_1fr_auto] gap-x-2 border-b border-line px-6 py-4">
+      <span className={`font-mono text-[12px] leading-5 tabular-nums ${quiet ? "text-ink-3" : "text-ink"}`}>
+        {String(props.n).padStart(2, "0")}
       </span>
-      <div className="min-w-0 flex-1 pt-0.5">
-        <p className={`text-[14px] ${status === "idle" || status === "skipped" ? "text-ink-3" : "font-medium text-ink"}`}>{title}</p>
+      <div className="min-w-0">
+        <p className={`flex items-center gap-2 text-[13px] leading-5 ${quiet ? "text-ink-3" : "font-medium text-ink"}`}>
+          {title}
+          {mark}
+        </p>
         {result && (
           <p
-            className={`${status === "idle" ? "" : "rise "}mt-0.5 text-[13px] leading-snug ${
-              status === "failed" ? "text-bad" : status === "skipped" || status === "idle" ? "text-ink-3" : "text-ink-2"
-            }`}
+            className={`rise mt-0.5 truncate text-[12px] leading-5 ${
+              status === "failed" ? "text-bad" : quiet ? "text-ink-3" : "text-ink-2"
+            } ${props.n === 4 ? "font-mono" : ""}`}
+            title={result}
           >
             {result}
           </p>
@@ -142,6 +127,7 @@ function Step(props: { n: number; step: AgentStep; last: boolean; children?: Rea
         {cmd && <span className="sr-only">{cmd}</span>}
         {props.children}
       </div>
+      <span className="font-mono text-[11px] leading-5 text-ink-3 tabular-nums">{t !== undefined ? `${t.toFixed(2)}s` : ""}</span>
     </li>
   );
 }
@@ -151,7 +137,7 @@ function Findings({ report, onFocus }: { report: AuditReport; onFocus: (f: { fil
   const blocking = report.findings.filter(isBlocking);
   const notes = report.findings.filter((f) => !isBlocking(f));
   return (
-    <ul className="rise mt-3 space-y-1">
+    <ul className="rise mt-3 border-t border-line">
       {[...blocking, ...notes].map((f, i) => (
         <FindingRow key={i} f={f} onFocus={onFocus} />
       ))}
@@ -165,38 +151,31 @@ function FindingRow({ f, onFocus }: { f: Finding; onFocus: (f: { file: string; l
     <li>
       <button
         onClick={() => onFocus({ file: f.file, line: f.line })}
-        className="flex w-full items-baseline gap-2 rounded px-2 py-1 text-left text-[13px] transition-colors hover:bg-muted"
+        className="flex w-full items-baseline gap-2 border-b border-line py-1.5 text-left text-[12px] transition-colors hover:bg-raised"
       >
-        <span className={`w-12 shrink-0 font-mono text-[12px] tabular-nums ${bad ? "text-bad" : "text-ink-3"}`}>L{f.line}</span>
+        <span className={`w-9 shrink-0 font-mono text-[12px] tabular-nums ${bad ? "text-bad" : "text-ink-3"}`}>L{f.line}</span>
         <span className={`min-w-0 flex-1 ${bad ? "text-ink" : "text-ink-2"}`}>{f.title}</span>
-        <span className={`shrink-0 text-[12px] ${f.severity === "critical" ? "text-bad" : "text-ink-3"}`}>{f.severity}</span>
+        <span className={`shrink-0 text-[11px] tracking-[0.08em] uppercase ${f.severity === "critical" ? "text-bad" : "text-ink-3"}`}>{f.severity}</span>
       </button>
     </li>
   );
 }
 
 function Receipt({ receipt, href }: { receipt: ExecutionReceipt; href?: string }) {
-  const sim = receipt.origin === "simulated";
   return (
-    <dl className="rise mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-md bg-muted px-4 py-3 text-[13px]">
+    <dl className="rise mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border border-line bg-raised px-4 py-3 text-[12px]">
       <dt className="text-ink-3">Receipt</dt>
-      <dd className="text-ink tabular-nums">#{receipt.id}</dd>
+      <dd className="font-mono text-ok tabular-nums">#{receipt.id}</dd>
       <dt className="text-ink-3">Paid</dt>
-      <dd className="text-ink tabular-nums">{receipt.fee.toLocaleString("en-US")} ugnot</dd>
-      <dt className="text-ink-3">To</dt>
-      <dd className="font-mono text-[12px] text-ink-2" title={receipt.author}>
-        {shortAddr(receipt.author)}
+      <dd className="font-mono text-ink tabular-nums">
+        {receipt.fee.toLocaleString("en-US")} ugnot → {shortAddr(receipt.author)}
       </dd>
       <dt className="text-ink-3">Block</dt>
-      <dd className="text-ink tabular-nums">{receipt.height.toLocaleString("en-US")}</dd>
-      <dt className="text-ink-3">Tx</dt>
-      <dd className="min-w-0 truncate font-mono text-[12px] text-ink-2" title={receipt.txHash}>
-        {receipt.txHash.slice(0, 16)}…
-      </dd>
+      <dd className="font-mono text-ink tabular-nums">{receipt.height.toLocaleString("en-US")}</dd>
       {href && (
         <dd className="col-span-2 pt-1">
           <a href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-accent hover:underline">
-            gnoweb <ArrowUpRight />
+            View on gnoweb <ArrowUpRight />
           </a>
         </dd>
       )}

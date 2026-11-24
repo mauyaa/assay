@@ -15,4 +15,4 @@ export const SIM_CALLER = "g1jg8mtutu9khhfwc4nxmuhcpftf0pajdhfvsqf5";
 
 /** Human name for the connected network. */
 export const NETWORK_NAME =
-  NET.chainId === "onyx-1" ? "Onyx" : NET.chainId === "dev" ? "Local" : NET.chainId;
+  NET.chainId === "onyx-1" ? "Onyx Testnet" : NET.chainId === "dev" ? "Local Chain" : NET.chainId;

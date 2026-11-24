@@ -1,15 +1,12 @@
 "use client";
 
-import type { AuditReport, RegistryPackage } from "@assay/core";
+import { shortAddr, type AuditReport, type RegistryPackage } from "@assay/core";
 import { useMemo, useState } from "react";
 import { NETWORK_NAME } from "@/lib/network";
 import { Plus, Search } from "./icons";
 import type { RegistryMode } from "./Workbench";
 
-/**
- * A dot only appears when there is something to say:
- * green for verified or passed, red for failed. Unreviewed shows nothing.
- */
+/** 6px: green verified or passed, red failed, nothing when unreviewed. */
 export function StatusDot({ row, audit }: { row: RegistryPackage; audit?: AuditReport }) {
   if (audit?.verdict === "FAIL") return <span title="Failed audit" className="size-1.5 shrink-0 rounded-full bg-bad" />;
   if (row.verified || audit?.verdict === "PASS")
@@ -44,63 +41,61 @@ export function RegistryPane(props: {
   const shared = { selected: props.selected, audits: props.audits, onSelect: props.onSelect };
 
   return (
-    <aside className="flex flex-col border-b border-line bg-subtle lg:min-h-0 lg:border-r lg:border-b-0">
-      <div className="px-3 pt-6 pb-2">
-        <label className="flex h-8 items-center gap-2 rounded-md border border-line bg-raised px-3 text-ink-3 focus-within:border-ink-3 focus-within:text-ink-2">
-          <Search />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search"
-            aria-label="Search packages"
-            className="w-full bg-transparent text-[14px] text-ink placeholder:text-ink-3 focus:outline-none"
-          />
-        </label>
-      </div>
+    <aside className="flex flex-col border-b border-line lg:min-h-0 lg:border-r lg:border-b-0">
+      <label className="flex h-11 shrink-0 items-center gap-2 border-b border-line px-6 text-ink-3 focus-within:text-ink">
+        <Search />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search packages"
+          aria-label="Search packages"
+          className="w-full bg-transparent text-[13px] text-ink placeholder:text-ink-3 focus:outline-none"
+        />
+      </label>
 
-      <nav className="px-3 pb-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+      <nav className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
         {props.mode === "offline" && (
-          <div className="px-3 pt-6">
-            <p className="text-[14px] text-ink">Can’t reach {NETWORK_NAME}</p>
-            <button onClick={props.onRetry} className="mt-2 text-[14px] font-medium text-accent hover:underline">
+          <div className="border-b border-line px-6 py-5">
+            <p className="text-[13px] text-ink">Can’t reach {NETWORK_NAME}</p>
+            <button onClick={props.onRetry} className="mt-1 text-[13px] font-medium text-accent hover:underline">
               Retry
             </button>
           </div>
         )}
-        <Group title="Registry" aside="ugnot" rows={registered} {...shared} />
-        <Group title={`On ${NETWORK_NAME}`} rows={others} {...shared} />
-        {filtered.length === 0 && <p className="px-3 pt-6 text-[14px] text-ink-3">No results</p>}
+        <Group title="Registry" rows={registered} start={1} fees {...shared} />
+        <Group title={NETWORK_NAME} rows={others} start={registered.length + 1} {...shared} />
+        {filtered.length === 0 && <p className="px-6 py-5 text-[13px] text-ink-3">No results</p>}
       </nav>
 
-      <div className="border-t border-line p-3">
-        <button
-          onClick={props.onPublish}
-          className="flex h-8 w-full items-center gap-2 rounded-md px-3 text-[14px] text-ink-2 transition-colors hover:bg-muted hover:text-ink"
-        >
-          <Plus /> Publish
-        </button>
-      </div>
+      <button
+        onClick={props.onPublish}
+        className="flex h-11 shrink-0 items-center gap-2 border-t border-line px-6 text-[12px] font-medium tracking-[0.08em] text-ink-2 uppercase transition-colors hover:bg-raised hover:text-ink"
+      >
+        <Plus /> Publish
+      </button>
     </aside>
   );
 }
 
 function Group(props: {
   title: string;
-  aside?: string;
   rows: RegistryPackage[];
+  start: number;
+  fees?: boolean;
   selected: string;
   audits: Record<string, AuditReport>;
   onSelect: (path: string) => void;
 }) {
   if (props.rows.length === 0) return null;
   return (
-    <section className="pt-6">
-      <h2 className="flex items-baseline justify-between px-3 pb-2 text-[12px] text-ink-3">
-        <span className="font-medium">{props.title}</span>
-        {props.aside && <span>{props.aside}</span>}
+    <section>
+      <h2 className="grid grid-cols-[2.25rem_1fr_auto] items-end border-b border-line px-6 pt-5 pb-2 text-[11px] font-medium tracking-[0.08em] text-ink-3 uppercase">
+        <span>№</span>
+        <span>{props.title}</span>
+        {props.fees && <span>ugnot</span>}
       </h2>
-      <ul className="space-y-px">
-        {props.rows.map((r) => {
+      <ul>
+        {props.rows.map((r, i) => {
           const active = r.path === props.selected;
           const { name } = splitPath(r.path);
           return (
@@ -108,16 +103,23 @@ function Group(props: {
               <button
                 onClick={() => props.onSelect(r.path)}
                 aria-current={active ? "page" : undefined}
-                className={`flex w-full items-start gap-3 rounded-md px-3 py-2 text-left transition-colors ${
-                  active ? "bg-raised shadow-[0_0_0_1px_var(--color-border),var(--shadow-sm)]" : "hover:bg-muted"
+                title={r.path}
+                className={`grid w-full grid-cols-[2.25rem_1fr_auto] items-start border-b border-l-2 border-b-line py-3 pr-6 pl-[22px] text-left transition-colors ${
+                  active ? "border-l-action bg-raised" : "border-l-transparent hover:bg-raised"
                 }`}
               >
-                <span className="flex min-w-0 flex-1 items-center gap-2" title={r.path}>
-                  <span className={`truncate text-[14px] leading-5 text-ink ${active ? "font-medium" : ""}`}>{name}</span>
-                  <StatusDot row={r} audit={props.audits[r.path]} />
+                <span className={`font-mono text-[12px] leading-5 tabular-nums ${active ? "text-ink" : "text-ink-3"}`}>
+                  {String(props.start + i).padStart(2, "0")}
                 </span>
-                {r.listing === "registry" && (
-                  <span className="shrink-0 text-[14px] leading-5 text-ink-2 tabular-nums">{r.feePerCall.toLocaleString("en-US")}</span>
+                <span className="min-w-0">
+                  <span className="flex items-center gap-2">
+                    <span className={`truncate text-[14px] leading-5 text-ink ${active ? "font-semibold" : ""}`}>{name}</span>
+                    <StatusDot row={r} audit={props.audits[r.path]} />
+                  </span>
+                  {r.author && <span className="block truncate font-mono text-[12px] leading-5 text-ink-2">{shortAddr(r.author)}</span>}
+                </span>
+                {props.fees && (
+                  <span className="font-mono text-[13px] leading-5 text-ink tabular-nums">{r.feePerCall.toLocaleString("en-US")}</span>
                 )}
               </button>
             </li>
