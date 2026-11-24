@@ -11,9 +11,18 @@ Assay is a package registry and payment escrow on gno.land, plus an AI-agent too
 | Demo packages | `gno.land/p/nym-assay001/vault_math` (clean), `gno.land/p/nym-assay001/malicious_helper` (trap, registered only) |
 | License | Apache-2.0 |
 
+**Live app:** https://mauyaa.github.io/assay/ · **Trap Test in one click:** https://mauyaa.github.io/assay/?pkg=gno.land/p/nym-assay001/malicious_helper&audit=1
+
+![The agent rejects malicious_helper: line 18 sends the caller's coins to a hard-coded address](docs/img/trap-rejected.png)
+
 > **Status, plainly.** Everything below is built and tested, and the full flow runs with real transactions on a local gno chain ([proof](#reproduce-the-core-flow-on-a-local-chain)). **The Onyx deployment is not done yet.** It needs the project's key and namespace, and the [deployment record](#onyx-deployment-record) is filled in only after it happens. See [Truthful status](#truthful-status).
 
 ---
+
+<table><tr>
+<td><img src="docs/img/clean-passed.png" alt="vault_math passes the audit"></td>
+<td><img src="docs/img/dark.png" alt="Dark mode follows the device setting"></td>
+</tr><tr><td>Clean package: audit passed</td><td>Dark mode follows the device</td></tr></table>
 
 ## The problem
 
@@ -328,6 +337,12 @@ Filled in after deployment. Every value must open in a private browser window.
 - No secrets are in the repository. The only mnemonic in it (`scripts/local-proof.sh`) is gnodev's public development account, which only funds local chains.
 - `malicious_helper` is a real drain, there to prove the auditor catches it. Never deploy it or pass it a realm you care about.
 - The audit is a safety net, not a guarantee. On chain, verification is set by auditors you trust.
+
+## More
+
+- [Demo script](docs/DEMO.md): a 3-minute walkthrough on Onyx
+- [Usability](docs/USABILITY.md): internal walkthrough findings and fixes, plus the protocol for an independent test
+- Deep links: `?pkg=<path>` opens a package; add `&audit=1` to audit it on arrival
 
 ## Project layout
 
