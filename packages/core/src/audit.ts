@@ -54,7 +54,7 @@ interface Lexed {
   bare: string[];
 }
 
-/** Blanks comments (and optionally string bodies) while preserving line and column positions. */
+/** Blanks comments and string bodies, keeping line and column positions. */
 export function lex(src: string): Lexed {
   let code = "";
   let bare = "";
@@ -116,7 +116,7 @@ function splitArgs(s: string): string[] {
   return out;
 }
 
-/** Text between the parenthesis opening at `from` and its match, possibly spanning lines. */
+/** Arguments of the call whose "(" is at `from`, across lines. */
 function callArgs(lines: string[], lineIdx: number, from: number): string {
   let depth = 0;
   let out = "";
@@ -139,15 +139,7 @@ async function sha256(s: string): Promise<string> {
 
 const isTestFile = (name: string) => name.endsWith("_test.gno") || name.endsWith("_filetest.gno");
 
-/**
- * Static security audit of a Gno package's plain-text source.
- *
- * The rules target what can actually hurt a caller on gno.land: code that
- * moves or mints coins, pure packages that ask for a realm handle (and so
- * can spend from it), hard-coded recipients, missing origin checks around
- * OriginSend, and unbounded loops. Any critical or high finding fails the
- * audit, and agents must not pay to execute a failed package.
- */
+/** Audits a package's source. Any critical or high finding fails it. */
 export async function auditPackage(pkgPath: string, files: SourceFile[]): Promise<AuditReport> {
   const kind: AuditReport["kind"] = pkgPath.includes("/r/") ? "realm" : "package";
   const isPure = kind === "package";
@@ -166,7 +158,7 @@ export async function auditPackage(pkgPath: string, files: SourceFile[]): Promis
     linesScanned += raw.length;
     const at = (i: number) => ({ file: file.name, line: i + 1, snippet: raw[i] ?? "" });
 
-    // Identifiers bound to address literals: const sink = "g1...", x := address("g1...").
+    // Names bound to address literals, e.g. const sink = "g1...".
     const addrIdents = new Set<string>();
     const bindRe = new RegExp(`\\b([A-Za-z_]\\w*)\\s*(?:address\\s*)?(?::=|=)\\s*(?:address\\s*\\(\\s*)?"g1${BECH32}{38}"`);
     for (const line of code) {
@@ -188,7 +180,6 @@ export async function auditPackage(pkgPath: string, files: SourceFile[]): Promis
       const c = code[i] ?? "";
       const b = bare[i] ?? "";
 
-      // Imports (single-line and grouped).
       const imp = c.match(/^\s*(?:import\s+)?(?:[A-Za-z_]\w*\s+)?"([^"]+)"\s*$/);
       if (imp) {
         const path = imp[1];
@@ -206,7 +197,6 @@ export async function auditPackage(pkgPath: string, files: SourceFile[]): Promis
         }
       }
 
-      // Exported function that takes a realm handle in a pure package.
       if (isPure) {
         const fn = c.match(/^\s*func\s+(?:\([^)]*\)\s*)?([A-Z]\w*)\s*\(([^)]*)\)/);
         if (fn && /\brealm\b/.test(fn[2])) {
@@ -225,7 +215,6 @@ export async function auditPackage(pkgPath: string, files: SourceFile[]): Promis
           message: isPure ? "A library minting or burning coins on the caller's behalf." : "Realm mints or burns coins; check who can trigger it." });
       }
 
-      // Coin transfers.
       const send = b.search(/\.SendCoins\s*\(/);
       if (send >= 0) {
         const args = splitArgs(callArgs(code, i, c.indexOf("(", send)));
@@ -239,14 +228,12 @@ export async function auditPackage(pkgPath: string, files: SourceFile[]): Promis
         }
       }
 
-      // Address literals not already reported as a drain target.
       ADDR_LITERAL_G.lastIndex = 0;
       if (ADDR_LITERAL_G.test(c) && !findings.some((f) => f.file === file.name && f.line === i + 1 && f.rule === "AS001")) {
         add({ rule: "AS006", severity: isPure ? "high" : "medium", ...at(i),
           message: "Hard-coded wallet address. In a library this usually marks a fee sink or drain target." });
       }
 
-      // for { ... } with no break/return inside.
       const loopAt = b.search(/\bfor\s*\{/);
       if (loopAt >= 0) {
         let depth = 0;

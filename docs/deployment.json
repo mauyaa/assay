@@ -1,0 +1,49 @@
+{
+  "network": "onyx-1",
+  "deployer": "g1uwn3jummxxy5845ns0zm97lcrfmdmneg5c5d8k",
+  "realm": "gno.land/r/nym-assay001/registry",
+  "packages": [
+    "gno.land/p/nym-assay001/vault_math"
+  ],
+  "registered_only": [
+    "gno.land/p/nym-assay001/malicious_helper"
+  ],
+  "transactions": [
+    {
+      "step": "Register nym-assay001",
+      "height": 1379773,
+      "tx_hash": "7iQAeeCKIXWcotnxE/gXHFO+BIUmypoDFg0GtolERII="
+    },
+    {
+      "step": "Deploy gno.land/p/nym-assay001/vault_math",
+      "height": 1379774,
+      "tx_hash": "5C6B4ojHiJcXWtCZFxOxAFxghp7FPI56U+S+TPKTKvg="
+    },
+    {
+      "step": "Deploy gno.land/r/nym-assay001/registry",
+      "height": 1379775,
+      "tx_hash": "psMZVwmi4j/gDkv+ZEkc0Qnf7LxGp+B3pOPqzKyRSEI="
+    },
+    {
+      "step": "Register gno.land/p/nym-assay001/vault_math",
+      "height": 1384936,
+      "tx_hash": "urLM/2HC2kvGpQYniiJp0PMjEBO4RFqCHbwG/EVSUH0="
+    },
+    {
+      "step": "Register gno.land/p/nym-assay001/malicious_helper",
+      "height": 1384937,
+      "tx_hash": "CojT3zLwmgbp39vMzWAiN871ffg8FcgOxDrwP8qimb8="
+    },
+    {
+      "step": "Verify gno.land/p/nym-assay001/vault_math",
+      "height": 1384938,
+      "tx_hash": "/ibs2T2mxMyDNj3YHQ4gKwSQI/82hTs1snPYtADPBkQ="
+    },
+    {
+      "step": "Pay gno.land/p/nym-assay001/vault_math (deploy-1795552217)",
+      "height": 1384939,
+      "tx_hash": "JDM2kST4Ey9jYF1WGqOPZpnJCyV/v/8Rq3ABdsOx27w="
+    }
+  ],
+  "source_commit": "61759cd9b534ae6210191f93d95309869047977b"
+}

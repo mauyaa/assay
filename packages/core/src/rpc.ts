@@ -20,10 +20,7 @@ export function fromBase64(b64: string): string {
   return dec.decode(bytes);
 }
 
-/**
- * Minimal gno.land RPC client: tm2 JSON-RPC `abci_query` against the vm
- * module (qfile, qrender) plus `status`. Works in browsers and Node 20+.
- */
+/** gno.land RPC client for browsers and Node: vm/qfile, vm/qrender, status. */
 export class GnoClient {
   private id = 0;
   constructor(
@@ -75,7 +72,7 @@ export class GnoClient {
     };
   }
 
-  /** File names in a package, or null if the package is not on chain. */
+  /** File names, or null if the package isn't on chain. */
   async listFiles(pkgPath: string): Promise<string[] | null> {
     const r = await this.abci("vm/qfile", pkgPath);
     if (!r.ok) return null;
@@ -87,7 +84,7 @@ export class GnoClient {
     return r.ok ? r.data : null;
   }
 
-  /** All .gno files (and gnomod.toml) of a package exactly as stored on chain. */
+  /** All .gno files and gnomod.toml, as stored on chain. */
   async fetchPackage(pkgPath: string): Promise<SourceFile[] | null> {
     const names = await this.listFiles(pkgPath);
     if (!names) return null;
@@ -96,13 +93,13 @@ export class GnoClient {
     return wanted.map((name, i) => ({ name, body: bodies[i] ?? "" }));
   }
 
-  /** Calls Render(path) on a realm. Null if the realm does not exist. */
+  /** Render(path) of a realm, or null if it doesn't exist. */
   async render(realmPath: string, path = ""): Promise<string | null> {
     const r = await this.abci("vm/qrender", `${realmPath}:${path}`);
     return r.ok ? r.data : null;
   }
 
-  /** Registered packages from the deployed Assay registry, or null if it is not deployed. */
+  /** Registered packages, or null if the registry isn't deployed. */
   async registryPackages(): Promise<RegistryPackage[] | null> {
     const raw = await this.render(this.net.registryPath, "api/packages");
     if (raw === null) return null;

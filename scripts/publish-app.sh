@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Builds the static app and publishes it to the gh-pages branch (GitHub Pages).
-#   ./scripts/publish-app.sh
+# Build the app and publish it to GitHub Pages (gh-pages branch).
 set -euo pipefail
 DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$DIR"

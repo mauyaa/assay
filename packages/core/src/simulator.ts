@@ -2,12 +2,7 @@ import { BUNDLED_SOURCES } from "./bundled-sources";
 import { DEMO_PACKAGES } from "./config";
 import type { ExecutionReceipt, RegistryPackage } from "./types";
 
-/**
- * In-memory mirror of r/nym-assay001/registry, used when the realm is not yet
- * deployed (or no wallet is connected) so the demo still runs end to end.
- * Every check and every Render() string follows registry.gno; anything it
- * produces is tagged origin "simulated" and shown as such in the UI.
- */
+/** In-memory mirror of registry.gno for networks where it isn't deployed. Output is labelled "simulated". */
 
 export const DEMO_AUTHORS = {
   vault: "g1w3jhxap3ta047h6lta047h6lta047h6l4mfnm7",

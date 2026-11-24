@@ -25,10 +25,6 @@ export function networkFromEnv(env = process.env): NetworkConfig {
   };
 }
 
-// ---------------------------------------------------------------------------
-// list_gno_packages
-// ---------------------------------------------------------------------------
-
 export async function listPackages(client: GnoClient) {
   const live = await client.registryPackages().catch(() => null);
   if (live) {
@@ -53,10 +49,6 @@ export async function listPackages(client: GnoClient) {
   };
 }
 
-// ---------------------------------------------------------------------------
-// fetch_and_audit_gno_source
-// ---------------------------------------------------------------------------
-
 export interface AuditResult {
   pkgPath: string;
   sourceOrigin: "onyx" | "registry" | "bundled";
@@ -75,8 +67,7 @@ export async function fetchAndAudit(client: GnoClient, pkgPath: string, includeS
   const report = await auditPackage(pkgPath, src.files);
   const registry = await client.registryPackage(pkgPath).catch(() => null);
 
-  // The registry stores the source the author registered. If the package is
-  // also deployed, the two must agree, otherwise the listing misrepresents the code.
+  // A registered source that differs from the deployed code is a false listing.
   let integrity: AuditResult["integrity"] = { checked: false, note: "Package is not registered on chain; nothing to compare." };
   if (registry?.sourceCode && src.origin === "onyx") {
     const norm = (s: string) => s.replace(/\r\n/g, "\n").trim();
@@ -106,10 +97,6 @@ function numbered(body: string): string {
   const w = String(lines.length).length;
   return lines.map((l, i) => `${String(i + 1).padStart(w)} │ ${l}`).join("\n");
 }
-
-// ---------------------------------------------------------------------------
-// execute_verified_package
-// ---------------------------------------------------------------------------
 
 export interface ExecuteOptions {
   pkgPath: string;
@@ -162,8 +149,7 @@ export async function executeVerified(client: GnoClient, opts: ExecuteOptions, e
     };
   }
 
-  // Callers may pass their own id so a retry after a lost response is refused
-  // by the realm instead of charged twice.
+  // Reuse the caller's id on retries so the realm refuses a second charge.
   const requestID = opts.requestID ?? randomUUID();
   const keyName = env.GNOKEY_NAME;
   const args = [

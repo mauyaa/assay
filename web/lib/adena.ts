@@ -1,7 +1,4 @@
-/**
- * Thin wrapper over the Adena wallet extension (window.adena).
- * https://docs.adena.app
- */
+/** Adena wallet (window.adena). https://docs.adena.app */
 
 interface AdenaResponse<T = unknown> {
   code: number;
@@ -88,7 +85,7 @@ export async function adenaCall(p: {
   return { hash: res.data.hash, height: res.data.height ? Number(res.data.height) : undefined };
 }
 
-/** Rejects if the wallet doesn't answer, so the UI never hangs on a closed popup. */
+/** Fails if the wallet never answers, e.g. a closed popup. */
 export function withTimeout<T>(p: Promise<T>, ms = 120_000): Promise<T> {
   return Promise.race([
     p,
@@ -96,7 +93,7 @@ export function withTimeout<T>(p: Promise<T>, ms = 120_000): Promise<T> {
   ]);
 }
 
-/** Turns wallet and chain errors into one short, actionable sentence. */
+/** One short sentence for a wallet or chain error. */
 export function explainWalletError(e: unknown, chainId: string): string {
   const m = e instanceof Error ? e.message : String(e);
   if (/reject|denied|cancel|declin/i.test(m)) return "Rejected in wallet. Nothing was sent.";

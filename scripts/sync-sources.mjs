@@ -1,5 +1,4 @@
-// Copies the Gno contracts into the TypeScript core so the UI and MCP server
-// can show and audit the exact same source when a package is not on chain yet.
+// Bundles contracts/ into the core package, for networks where they aren't deployed.
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";

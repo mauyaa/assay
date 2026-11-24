@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Captures README screenshots from the running app with headless Chrome.
-# Usage: start the app (npm run dev), then: ./scripts/screenshots.sh [base-url]
+# README screenshots from a running app: ./scripts/screenshots.sh [base-url]
 set -euo pipefail
 BASE=${1:-http://localhost:3000}
 OUT="$(cd "$(dirname "$0")/.." && pwd)/docs/img"

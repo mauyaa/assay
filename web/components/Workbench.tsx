@@ -75,7 +75,6 @@ export function Workbench() {
   const rows = useMemo(() => [...registry, ...CHAIN_SAMPLES.map(sampleRow)], [registry]);
   const selectedRow = rows.find((r) => r.path === selected) ?? null;
 
-  // Chain status, polled.
   useEffect(() => {
     let alive = true;
     const tick = async () => {
@@ -97,7 +96,6 @@ export function Workbench() {
     };
   }, []);
 
-  // Registry: live if the realm is deployed, simulated otherwise.
   const refreshRegistry = useCallback(async () => {
     try {
       const live = await client.registryPackages();
@@ -107,12 +105,12 @@ export function Workbench() {
         return;
       }
     } catch {
-      // The network is unreachable. Say so: never pass an outage off as a demo.
+      // Never pass an outage off as a working demo.
       setMode("offline");
       setRegistry([]);
       return;
     }
-    // Reachable, but the registry isn't deployed here: run the labelled simulation.
+    // Reachable, registry not deployed: run the labelled simulation.
     setMode("simulated");
     setRegistry(sim.current.list());
   }, []);
@@ -133,7 +131,6 @@ export function Workbench() {
     pendingAudit.current = q.get("audit") === "1";
   }, []);
 
-  // The URL follows what a person picks, so any view can be shared as a link.
   const select = (pkg: string) => {
     setSelected(pkg);
     const url = new URL(window.location.href);
@@ -168,8 +165,7 @@ export function Workbench() {
     return () => {
       alive = false;
     };
-    // Refetch when the selection changes or the network comes back (mode flips),
-    // not when registry counters update.
+    // Refetch on selection or reconnect, not on counter updates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, mode]);
 
@@ -186,7 +182,6 @@ export function Workbench() {
     }
   };
 
-  // ---- Agent ---------------------------------------------------------------
   const runAgent = async (execute: boolean) => {
     if (running) return;
     const pkgPath = selected;
@@ -210,7 +205,6 @@ export function Workbench() {
     };
 
     try {
-      // 1. Read
       step(0, { status: "running", cmd: `vm/qfile ${pkgPath}` });
       const [src] = await Promise.all([fetchSource(pkgPath), sleep(450)]);
       if (!src) {
@@ -227,7 +221,6 @@ export function Workbench() {
         result: `${lines} lines · ${src.origin === "onyx" || src.origin === "registry" ? "on chain" : "local copy"}`,
       });
 
-      // 2. Audit
       step(1, { status: "running", cmd: `11 rules · ${lines} lines` });
       const [report] = await Promise.all([auditPackage(pkgPath, src.files), sleep(650)]);
       setAudits((a) => ({ ...a, [pkgPath]: report }));
@@ -244,13 +237,12 @@ export function Workbench() {
       });
       if (!execute) return;
 
-      // 3. Pay
       await sleep(250);
       if (report.verdict !== "PASS") return stop(2, "Blocked · 0 ugnot spent");
       if (!row || row.listing !== "registry") return stop(2, "No fee");
       if (!row.verified) return stop(2, "Blocked · unverified");
 
-      // One id per click: a retry of this same payment can never be charged twice.
+      // One id per payment, so a retry can't be charged twice.
       const requestID = crypto.randomUUID();
       step(2, { status: "running", cmd: `${NET.registryPath}.ExecuteAndPay · send ${fee}ugnot` });
       let receipt: ExecutionReceipt;
@@ -283,7 +275,6 @@ export function Workbench() {
       }
       step(2, { status: "done", result: `${fee.toLocaleString("en-US")} ugnot` });
 
-      // 4. Receipt
       step(3, { status: "done" });
       setRun((r) => (r ? { ...r, receipt, receiptHref } : r));
       setRenderNonce((n) => n + 1);
@@ -299,7 +290,7 @@ export function Workbench() {
     }
   };
 
-  // Run a deep-linked audit once the registry and the package source are in.
+  // Run a deep-linked audit once registry and source have loaded.
   useEffect(() => {
     if (!pendingAudit.current || mode === "loading" || sourceLoading || source?.pkgPath !== selected) return;
     pendingAudit.current = false;

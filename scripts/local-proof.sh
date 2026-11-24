@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
-# Replays Assay's core flow on a local gno chain with real transactions and
-# checks every refusal case. Prerequisites: gnodev running from ./contracts
-# (see README) and gnokey on PATH.
-#
-# Signs with gnodev's built-in development account. Its mnemonic is public
-# (printed by gnodev, published in the gno repo) and only funds local chains.
+# Core flow and every refusal, on a local chain (gnodev in contracts/).
+# Signs with gnodev's public development account, which only exists locally.
 set -euo pipefail
 
 RPC=${RPC:-tcp://127.0.0.1:26657}
