@@ -1,0 +1,16 @@
+{
+  "name": "assay",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Verifiable AI-agent package registry and execution escrow on gno.land",
+  "workspaces": ["packages/core", "mcp-server", "web"],
+  "scripts": {
+    "sync-sources": "node scripts/sync-sources.mjs",
+    "typecheck": "npm run sync-sources && npm run typecheck -w @assay/core && npm run typecheck -w @assay/mcp-server && npm run typecheck -w @assay/web",
+    "test": "npm run sync-sources && npm test -w @assay/core",
+    "dev": "npm run sync-sources && npm run dev -w @assay/web",
+    "build": "npm run sync-sources && npm run build -w @assay/web",
+    "mcp": "npm run sync-sources && npm start -w @assay/mcp-server"
+  },
+  "engines": { "node": ">=20" }
+}

@@ -1,0 +1,248 @@
+@import "tailwindcss";
+
+/*
+  Assay palette, from the design concept.
+  90% neutral canvas: Archival Paper White, hairline rules, Deep Carbon ink,
+  Slate Muted metadata. 10% accents, each with exactly one meaning:
+    Signal Sage       #1E6B4B  verified / audit passed
+    Dieter Rams Red   #D93829  malicious / rejected
+    Cobalt Blueprint  #1D4ED8  on-chain action (pay, publish, links to chain)
+*/
+:root {
+  color-scheme: light;
+
+  /* 90%: canvas and ink */
+  --color-bg: #f9f9f8; /* Archival Paper White */
+  --color-bg-subtle: #f3f3f1; /* recessed: sidebar */
+  --color-bg-muted: #ececea; /* hover, active tab */
+  --color-bg-raised: #ffffff; /* paper lifted: code, inputs, selected row */
+  --color-border: #e4e4e1; /* Hairline Divider Rule */
+
+  --color-text-primary: #111110; /* Deep Carbon */
+  --color-text-secondary: #686864; /* Slate Muted */
+  --color-text-muted: #8b8b86; /* line numbers, captions */
+
+  /* 10%: accents */
+  --color-action: #1d4ed8; /* Cobalt Blueprint */
+  --color-action-hover: #1a44c0;
+  --color-on-action: #ffffff;
+  --color-accent: #1d4ed8;
+  --color-accent-wash: rgba(29, 78, 216, 0.07);
+  --color-accent-line: rgba(29, 78, 216, 0.22);
+  --color-success: #1e6b4b; /* Signal Sage */
+  --color-success-wash: rgba(30, 107, 75, 0.08);
+  --color-destructive: #d93829; /* Dieter Rams Red */
+  --color-destructive-wash: rgba(217, 56, 41, 0.06);
+
+  --shadow-sm: 0 1px 2px rgba(17, 17, 16, 0.06);
+  --shadow-xl: 0 16px 40px rgba(17, 17, 16, 0.14);
+  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Dark: the same seven colours, carried into the dark. Carbon becomes the canvas. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --color-bg: #111110; /* Deep Carbon */
+    --color-bg-subtle: #161615;
+    --color-bg-muted: #22221f;
+    --color-bg-raised: #1b1b19;
+    --color-border: #2b2b28;
+
+    --color-text-primary: #f2f2ef; /* Paper White, softened */
+    --color-text-secondary: #a3a39d; /* Slate, lifted */
+    --color-text-muted: #7d7d78;
+
+    --color-action: #2f5fe6; /* Cobalt, lifted for dark */
+    --color-action-hover: #4470ee;
+    --color-on-action: #ffffff;
+    --color-accent: #7f9fff;
+    --color-accent-wash: rgba(127, 159, 255, 0.1);
+    --color-accent-line: rgba(127, 159, 255, 0.3);
+    --color-success: #4fb386; /* Sage, lifted */
+    --color-success-wash: rgba(79, 179, 134, 0.1);
+    --color-destructive: #f0614f; /* Rams Red, lifted */
+    --color-destructive-wash: rgba(240, 97, 79, 0.09);
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.55);
+  }
+}
+
+@theme inline {
+  --color-bg: var(--color-bg);
+  --color-subtle: var(--color-bg-subtle);
+  --color-muted: var(--color-bg-muted);
+  --color-raised: var(--color-bg-raised);
+  --color-on-action: var(--color-on-action);
+  --color-line: var(--color-border);
+  --color-ink: var(--color-text-primary);
+  --color-ink-2: var(--color-text-secondary);
+  --color-ink-3: var(--color-text-muted);
+  --color-action: var(--color-action);
+  --color-action-hover: var(--color-action-hover);
+  --color-accent: var(--color-accent);
+  --color-accent-wash: var(--color-accent-wash);
+  --color-accent-line: var(--color-accent-line);
+  --color-ok: var(--color-success);
+  --color-ok-wash: var(--color-success-wash);
+  --color-bad: var(--color-destructive);
+  --color-bad-wash: var(--color-destructive-wash);
+
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-roboto-mono), Menlo, Consolas, monospace;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+::selection {
+  background: var(--color-accent-wash);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1.5px var(--color-accent);
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 240ms var(--ease-out) both;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+/* Render() markdown, set like a document */
+.doc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+.doc h1 {
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  margin: 0 0 12px;
+}
+.doc h2 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+  margin: 40px 0 12px;
+}
+.doc p {
+  margin: 0 0 16px;
+}
+.doc strong {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.doc em {
+  font-style: normal;
+  color: var(--color-text-muted);
+}
+.doc ul {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  list-style: disc;
+}
+.doc li {
+  margin: 4px 0;
+}
+.doc a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.doc a:hover {
+  text-decoration: underline;
+}
+.doc code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--color-bg-muted);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.doc pre {
+  background: var(--color-bg-muted);
+  border-radius: 6px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.doc pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+.doc table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin: 0 0 16px;
+  font-variant-numeric: tabular-nums;
+}
+.doc th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border);
+  padding: 8px 12px 8px 0;
+}
+.doc td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 10px 12px 10px 0;
+}
+.doc td,
+.doc th {
+  white-space: nowrap;
+}
+.doc table {
+  display: block;
+  overflow-x: auto;
+}
+.doc tr:last-child td {
+  border-bottom: none;
+}

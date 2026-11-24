@@ -1,0 +1,22 @@
+{
+  "name": "@assay/mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": { "assay-mcp": "./bin/assay-mcp.mjs" },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit -p .",
+    "smoke": "tsx src/smoke.ts"
+  },
+  "dependencies": {
+    "@assay/core": "0.1.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "tsx": "^4.23.15",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.3"
+  }
+}
